@@ -1,14 +1,14 @@
 import { SearchIcon } from "lucide-react";
 import { Input } from "./input";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { searchMovies, tmdbPosterUrl } from "../../api/tmdb";
-import type { TmdbMovie } from "../../api/tmdb"
-
+import type { TmdbMovie } from "../../api/tmdb";
 
 const SearchInput = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<TmdbMovie[]>([]);
   const [loading, setLoading] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -17,28 +17,51 @@ const SearchInput = () => {
     }
 
     const controller = new AbortController();
-    setLoading(true);
+    const timeout = setTimeout(() => {
+      setLoading(true);
 
-    searchMovies(query, controller.signal)
-      .then((res) => {
-        setResults(res.results.slice(0, 6)); // max 6 result
-      })
-      .catch((err) => {
-        if (err.name !== "AbortError") {
-          console.error(err);
-        }
-      })
-      .finally(() => setLoading(false));
+      searchMovies(query, controller.signal)
+        .then((res) => {
+          setResults(res.results.slice(0, 6));
+        })
+        .catch((err) => {
+          if (err.name !== "AbortError") console.error(err);
+        })
+        .finally(() => setLoading(false));
+    }, 400);
 
-    return () => controller.abort();
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
   }, [query]);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setResults([]);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <div className="relative w-full max-w-sm">
+    <div ref={containerRef} className="relative w-full max-w-sm">
       <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
       <Input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            setResults([]);
+            setQuery("");
+          }
+        }}
         placeholder="Search movies..."
         className="pl-10"
       />
@@ -47,6 +70,10 @@ const SearchInput = () => {
           {results.map((movie) => (
             <div
               key={movie.id}
+              onClick={() => {
+                setQuery("");
+                setResults([]);
+              }}
               className="flex items-center gap-3 px-3 py-2 hover:bg-muted cursor-pointer"
             >
               {movie.poster_path ? (
@@ -64,7 +91,7 @@ const SearchInput = () => {
           ))}
         </div>
       )}
-      {loading && (
+      {loading && results.length === 0 && (
         <div className="absolute top-full mt-2 text-xs text-muted-foreground">
           Searching...
         </div>

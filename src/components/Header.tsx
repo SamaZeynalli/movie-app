@@ -6,6 +6,7 @@ const navigation = [
   { name: "Popular", href: "/popular" },
   { name: "Top Rated", href: "/top-rated" },
   { name: "Trending", href: "/trending" },
+  { name: "Genres", href: "/genres" },
 ];
 
 export default function Header() {
@@ -40,4 +41,4 @@ export default function Header() {
       </nav>
     </header>
   );
-};
+}
