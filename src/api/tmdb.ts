@@ -1,50 +1,33 @@
-const BASE_URL = "https://api.themoviedb.org/3"
+const BASE_URL = "https://api.themoviedb.org/3";
 
-const apiKey = import.meta.env.VITE_TMDB_API_KEY as string
+const apiKey = import.meta.env.VITE_TMDB_API_KEY as string;
 
 if (!apiKey) {
-  console.warn("VITE_TMDB_API_KEY is missing in .env")
+  console.warn("VITE_TMDB_API_KEY is missing in .env");
 }
 
 export type TmdbMovie = {
-  id: number
-  title: string
-  poster_path: string | null
-  release_date?: string
-  vote_average?: number
-}
+  id: number;
+  title: string;
+  poster_path: string | null;
+  release_date?: string;
+  vote_average?: number;
+};
 
-async function fetchFromTMDB(
-  endpoint: string,
-  signal?: AbortSignal
-) {
-  const url = new URL(`${BASE_URL}${endpoint}`)
-  url.searchParams.set("api_key", apiKey)
-  url.searchParams.set("language", "en-US")
+async function fetchFromTMDB(endpoint: string, signal?: AbortSignal) {
+  const url = new URL(`${BASE_URL}${endpoint}`);
+  url.searchParams.set("api_key", apiKey);
+  url.searchParams.set("language", "en-US");
 
-  const res = await fetch(url.toString(), { signal })
+  const res = await fetch(url.toString(), { signal });
 
   if (!res.ok) {
-    throw new Error(`TMDB error: ${res.status}`)
+    throw new Error(`TMDB error: ${res.status}`);
   }
 
-  return res.json()
+  return res.json();
 }
 
-export async function getTrendingMovies() {
-  const data = await fetchFromTMDB("/trending/movie/day")
-  return { results: data.results as TmdbMovie[] }
-}
-
-export async function getPopularMovies() {
-  const data = await fetchFromTMDB("/movie/popular")
-  return { results: data.results as TmdbMovie[] }
-}
-
-export async function getTopRatedMovies() {
-  const data = await fetchFromTMDB("/movie/top_rated")
-  return { results: data.results as TmdbMovie[] }
-}
 
 export async function getMovieById(id: string) {
   const data = await fetchFromTMDB(`/movie/${id}`);
@@ -61,65 +44,60 @@ export async function getTvGenres() {
   return data;
 }
 
-export async function searchMovies(
-  query: string,
-  signal?: AbortSignal
-) {
-  const q = query.trim()
-  if (!q) return { results: [] as TmdbMovie[] }
+export async function searchMovies(query: string, signal?: AbortSignal) {
+  const q = query.trim();
+  if (!q) return { results: [] as TmdbMovie[] };
 
-  const url = new URL(`${BASE_URL}/search/movie`)
-  url.searchParams.set("api_key", apiKey)
-  url.searchParams.set("query", q)
-  url.searchParams.set("include_adult", "false")
-  url.searchParams.set("language", "en-US")
-  url.searchParams.set("page", "1")
+  const url = new URL(`${BASE_URL}/search/movie`);
+  url.searchParams.set("api_key", apiKey);
+  url.searchParams.set("query", q);
+  url.searchParams.set("include_adult", "false");
+  url.searchParams.set("language", "en-US");
+  url.searchParams.set("page", "1");
 
-  const res = await fetch(url.toString(), { signal })
+  const res = await fetch(url.toString(), { signal });
 
   if (!res.ok) {
-    throw new Error(`TMDB error: ${res.status}`)
+    throw new Error(`TMDB error: ${res.status}`);
   }
 
-  const data = await res.json()
+  const data = await res.json();
 
   return {
     results: (data?.results ?? []) as TmdbMovie[],
-  }
+  };
 }
 
 export function tmdbPosterUrl(
   path: string | null,
-  size: "w92" | "w185" | "w342" | "w500" | "w780" = "w342"
+  size: "w92" | "w185" | "w342" | "w500" | "w780" = "w342",
 ) {
-  if (!path) return ""
-  return `https://image.tmdb.org/t/p/${size}${path}`
+  if (!path) return "";
+  return `https://image.tmdb.org/t/p/${size}${path}`;
 }
 
 export async function discoverMoviesByGenre(
   genreId: string,
   sort: string = "popularity.desc",
-  page: number = 1
+  page: number = 1,
 ) {
   return fetchFromTMDB(
-    `/discover/movie?with_genres=${genreId}&sort_by=${sort}&page=${page}`
+    `/discover/movie?with_genres=${genreId}&sort_by=${sort}&page=${page}`,
   );
 }
 
 export async function discoverTvByGenre(
   genreId: string,
   sort: string = "popularity.desc",
-  page: number = 1
+  page: number = 1,
 ) {
   return fetchFromTMDB(
-    `/discover/tv?with_genres=${genreId}&sort_by=${sort}&page=${page}`
+    `/discover/tv?with_genres=${genreId}&sort_by=${sort}&page=${page}`,
   );
 }
 
 export async function createGuestSession() {
-  const data = await fetchFromTMDB(
-    "/authentication/guest_session/new"
-  );
+  const data = await fetchFromTMDB("/authentication/guest_session/new");
 
   return data as {
     success: boolean;
@@ -132,7 +110,7 @@ export async function addToFavorite(
   mediaType: "movie" | "tv",
   mediaId: number,
   favorite: boolean,
-  guestSessionId: string
+  guestSessionId: string,
 ) {
   const url = new URL(`${BASE_URL}/account/0/favorite`);
   url.searchParams.set("api_key", apiKey);
@@ -169,13 +147,43 @@ export type MovieCreditPerson = {
 };
 
 export async function getMovieCredits(movieId: number | string) {
-  const data = await fetchFromTMDB(
-    `/movie/${movieId}/credits`
-  );
+  const data = await fetchFromTMDB(`/movie/${movieId}/credits`);
 
   return data as {
     id: number;
     cast: MovieCreditPerson[];
     crew: MovieCreditPerson[];
+  };
+}
+
+export async function getPopularMovies(page: number = 1) {
+  const data = await fetchFromTMDB(`/movie/popular?page=${page}`);
+  return {
+    page: data.page,
+    results: data.results as TmdbMovie[],
+    totalPages: data.total_pages,
+  };
+}
+export async function getTopRatedMovies(page: number = 1) {
+  const data = await fetchFromTMDB(`/movie/top_rated?page=${page}`);
+  return {
+    page: data.page,
+    results: data.results,
+    totalPages: data.total_pages,
+  };
+}
+
+export async function getTrendingMovies(
+  timeWindow: "day" | "week" = "day",
+  page: number = 1
+) {
+  const data = await fetchFromTMDB(
+    `/trending/movie/${timeWindow}?page=${page}`
+  );
+
+  return {
+    page: data.page,
+    results: data.results,
+    totalPages: data.total_pages,
   };
 }
