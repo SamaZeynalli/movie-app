@@ -28,10 +28,27 @@ const PopularSection = () => {
         <div className="mx-auto aspect-[1155/678] w-[72rem] bg-gradient-to-tr from-indigo-500 to-purple-500 opacity-30 rounded-full" />
       </div>
       <div className="mx-auto max-w-4xl text-center">
-        <Link to="/popular" className="inline-block">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-indigo-600 hover:text-indigo-700 transition">
+        <Link to="/popular">
+          <span
+            className="
+      group inline-flex items-center gap-2
+      rounded-full px-5 py-2
+      text-xs font-extrabold uppercase tracking-widest
+      text-indigo-700
+      bg-indigo-100/80
+      ring-1 ring-indigo-200
+      transition
+      hover:bg-indigo-600
+      hover:text-white
+      hover:ring-indigo-400
+    "
+          >
+            <span className="text-base opacity-80">🎬</span>
             Popular Movies
-          </h2>
+            <span className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition">
+              →
+            </span>
+          </span>
         </Link>
         <p className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
           Most watched right now

@@ -10,6 +10,7 @@ export type TmdbMovie = {
   id: number;
   title: string;
   poster_path: string | null;
+  overview: string;
   release_date?: string;
   vote_average?: number;
 };
@@ -27,7 +28,6 @@ async function fetchFromTMDB(endpoint: string, signal?: AbortSignal) {
 
   return res.json();
 }
-
 
 export async function getMovieById(id: string) {
   const data = await fetchFromTMDB(`/movie/${id}`);
@@ -175,10 +175,10 @@ export async function getTopRatedMovies(page: number = 1) {
 
 export async function getTrendingMovies(
   timeWindow: "day" | "week" = "day",
-  page: number = 1
+  page: number = 1,
 ) {
   const data = await fetchFromTMDB(
-    `/trending/movie/${timeWindow}?page=${page}`
+    `/trending/movie/${timeWindow}?page=${page}`,
   );
 
   return {

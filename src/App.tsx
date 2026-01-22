@@ -11,6 +11,7 @@ import Genres from "./pages/Genres";
 import MovieDetail from "./pages/MovieDetail";
 import Discover from "./pages/Discover";
 import { Toaster } from "./components/ui/sonner";
+import Footer from "./components/Footer";
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/top-rated" element={<TopRated />} />
         <Route path="/trending" element={<Trending />} />
       </Routes>
+      <Footer/>
       <Toaster richColors />
     </>
   );
